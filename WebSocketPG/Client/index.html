@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Task</title>
+</head>
+<body>
+    <h1>WebSocket Task Runner</h1>
+    <button id="startButton">Start Task</button>
+    <ul id="taskUpdates"></ul>
+
+    <script>
+        document.getElementById('startButton').addEventListener('click', function() {
+            const socket = new WebSocket('https://localhost:7048/start-task'); // Adjust the URL as per your setup
+            let hasErrorOccurred = false; // Track whether an error has occurred
+
+            socket.onopen = function(event) {
+                console.log('WebSocket connection established.');
+                document.getElementById('taskUpdates').innerHTML += '<li>Task started...</li>';
+            };
+
+            socket.onmessage = function(event) {
+                console.log('Message from server:', event.data);
+
+                // Try parsing the message as JSON to check if it's an error message
+                try {
+                    const data = JSON.parse(event.data);
+
+                    if (data.type === "error") {
+                        console.error('Error from server:', data.message);
+                        document.getElementById('taskUpdates').innerHTML += `<li style="color:red;">Error: ${data.message}</li>`;
+                        hasErrorOccurred = true; // Mark that an error has occurred
+                        socket.close(); // Close the connection when an error occurs
+                    } else {
+                        // If it's not an error, display the normal task progress
+                        document.getElementById('taskUpdates').innerHTML += `<li>${event.data}</li>`;
+                    }
+                } catch (e) {
+                    // If the message is not JSON, just treat it as regular task output
+                    document.getElementById('taskUpdates').innerHTML += `<li>${event.data}</li>`;
+                }
+            };
+
+            socket.onclose = function(event) {
+                if (hasErrorOccurred) {
+                    console.log('WebSocket connection closed due to an error.');
+                    document.getElementById('taskUpdates').innerHTML += '<li>Task terminated due to an error.</li>';
+                } else {
+                    console.log('WebSocket connection closed.');
+                    document.getElementById('taskUpdates').innerHTML += '<li>Task finished successfully!</li>';
+                }
+            };
+
+            socket.onerror = function(error) {
+                console.error('WebSocket error observed:', error);
+                document.getElementById('taskUpdates').innerHTML += '<li>Connection error occurred!</li>';
+                hasErrorOccurred = true; // Handle WebSocket-level errors
+                socket.close();
+            };
+        });
+    </script>
+</body>
+</html>
