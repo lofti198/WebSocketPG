@@ -1,4 +1,4 @@
-# WebSocketPG
+# WebSocket Playgroung: .NET 8 backend and JavaScript frontend
 
 This project demonstrates a simple WebSocket interaction between a .NET 8 backend and a raw JavaScript frontend. The server processes a simulated long-running task and sends real-time updates to the client. The project includes error handling where the server can notify the client of a failure, and the client will handle the error and terminate the interaction.
 
